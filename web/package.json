@@ -6,10 +6,20 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx"
+    "android": "npm run build && npx cap sync android && npx cap open android",
+    "android:build": "npm run build && npx cap sync android",
+    "cap:init": "npx cap init pizza-chain uz.pizza.chain --web-dir dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.0",
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.1.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.1",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
     "@tanstack/react-query": "^5.50.1",
     "axios": "^1.7.2",
     "chart.js": "^4.4.3",
