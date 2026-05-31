@@ -16,7 +16,8 @@
       "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__execute_sql",
       "Bash(curl -s http://localhost:5173)",
       "Bash(git push *)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:3001/health)"
     ]
   }
 }
