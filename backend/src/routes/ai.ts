@@ -8,10 +8,10 @@ const router = Router();
 // AI ga savol berish
 router.post('/ask', authenticate, requireRole('owner'), async (req: Request, res: Response): Promise<void> => {
   try {
-    const { question } = req.body;
+    const { question, api_key } = req.body;
     if (!question?.trim()) { res.status(400).json({ error: 'Savol kerak' }); return; }
 
-    const answer = await askAI(req.user!.id, question);
+    const answer = await askAI(req.user!.id, question, api_key);
     res.json({ question, answer });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Server xatosi' });

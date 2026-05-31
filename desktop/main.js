@@ -2,7 +2,8 @@ const { app, BrowserWindow, Menu, Tray, nativeImage, shell } = require('electron
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
-const PROD_URL = 'https://pizza-chain-app.vercel.app';
+// Production URL: Vercel deployment yoki Cloudflare tunnel
+const PROD_URL = process.env.APP_URL || 'https://pizza-chain-app.vercel.app';
 const DEV_URL = 'http://localhost:5173';
 const isDev = process.env.NODE_ENV === 'development';
 

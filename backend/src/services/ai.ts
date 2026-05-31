@@ -2,9 +2,13 @@ import Anthropic from '@anthropic-ai/sdk';
 import { query, queryOne } from '../config/database';
 import { logger } from '../config/logger';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getClient(userApiKey?: string) {
+  const key = userApiKey || process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('API kalit kiritilmagan. Sozlamalar → AI API kaliti bo\'limiga kiriting.');
+  return new Anthropic({ apiKey: key });
+}
 
-export async function askAI(userId: string, question: string): Promise<string> {
+export async function askAI(userId: string, question: string, userApiKey?: string): Promise<string> {
   try {
     const today = new Date().toISOString().split('T')[0];
 
@@ -36,7 +40,8 @@ Filiallar ko'rsatkichlari:
 ${branchKpis.map(b => `- ${b.name}: daromad=${Number(b.total_revenue || 0).toLocaleString()} so'm, buyurtmalar=${b.total_orders || 0}`).join('\n')}
     `.trim();
 
-    const response = await anthropic.messages.create({
+    const client = getClient(userApiKey);
+    const response = await client.messages.create({
       model: 'claude-opus-4-8',
       max_tokens: 1024,
       system: `Siz pizza restoran tarmoqini boshqarishda yordam beruvchi sun'iy intellekt yordamchisisiz.

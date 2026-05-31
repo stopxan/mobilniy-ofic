@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "build": 1,
+  "date": "2026-05-31",
+  "changes": [
+    "Boshlang'ich versiya",
+    "Dashboard, Vazifalar, Moliya",
+    "AI Yordamchi, Analitika",
+    "iiko va Telegram integratsiyasi"
+  ],
+  "download": {
+    "windows": "https://github.com/stopxan/mobilniy-ofic/releases/latest/download/Pizza-Chain-Setup.exe",
+    "android": "https://github.com/stopxan/mobilniy-ofic/releases/latest/download/pizza-chain.apk"
+  }
+}

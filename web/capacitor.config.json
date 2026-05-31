@@ -1,0 +1,9 @@
+﻿{
+    "appId":  "uz.pizza.chain",
+    "webDir":  "../web/dist",
+    "appName":  "Pizza Chain",
+    "server":  {
+                   "cleartext":  false,
+                   "url":  "https://minus-pieces-homework-luck.trycloudflare.com"
+               }
+}

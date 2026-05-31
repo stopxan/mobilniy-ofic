@@ -1,10 +1,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, CheckSquare, DollarSign, Package,
-  Users, Truck, Bell, Bot, BarChart3, LogOut, Menu, X
+  Users, Truck, Bell, Bot, BarChart3, LogOut, Menu, X, Settings
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../store/auth';
+import { useSettingsStore } from '../store/settings';
 import { api } from '../lib/api';
 import toast from 'react-hot-toast';
 
@@ -18,19 +19,19 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Analitika', roles: ['owner', 'accountant'] },
   { to: '/reminders', icon: Bell, label: 'Eslatmalar', roles: ['owner', 'manager'] },
   { to: '/ai', icon: Bot, label: 'AI Yordamchi', roles: ['owner'] },
+  { to: '/settings', icon: Settings, label: 'Sozlamalar', roles: ['owner', 'accountant', 'manager', 'courier'] },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuthStore();
+  const { anthropicApiKey } = useSettingsStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const visibleItems = navItems.filter(item => user && item.roles.includes(user.role));
 
   async function handleLogout() {
-    try {
-      await api.post('/auth/logout');
-    } catch {}
+    try { await api.post('/auth/logout'); } catch {}
     logout();
     navigate('/login', { replace: true });
     toast.success('Chiqildi');
@@ -44,7 +45,7 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar overlay (mobile) */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -79,7 +80,17 @@ export default function Layout() {
             </div>
           </div>
           {user?.branch_name && (
-            <div className="mt-2 text-xs text-slate-500 truncate">{user.branch_name}</div>
+            <div className="mt-1 text-xs text-slate-500 truncate">{user.branch_name}</div>
+          )}
+          {/* AI key warning */}
+          {user?.role === 'owner' && !anthropicApiKey && (
+            <NavLink
+              to="/settings"
+              className="mt-2 flex items-center gap-1 text-xs text-yellow-400 hover:text-yellow-300"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span>⚠️</span> AI kalit kiritilmagan
+            </NavLink>
           )}
         </div>
 
@@ -119,7 +130,7 @@ export default function Layout() {
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar (mobile) */}
+        {/* Mobile top bar */}
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-slate-800 border-b border-slate-700">
           <button onClick={() => setSidebarOpen(true)} className="text-slate-400">
             <Menu size={20} />

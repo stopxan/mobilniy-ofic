@@ -12,6 +12,16 @@ import DeliveryPage from './pages/Delivery';
 import RemindersPage from './pages/Reminders';
 import AIPage from './pages/AI';
 import AnalyticsPage from './pages/Analytics';
+import SettingsPage from './pages/Settings';
+import UpdateBanner from './components/UpdateBanner';
+
+// PWA install event capture
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    (window as any).__pwaInstallEvent = e;
+  });
+}
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -40,9 +50,11 @@ export default function App() {
           <Route path="reminders" element={<RemindersPage />} />
           <Route path="ai" element={<AIPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <UpdateBanner />
     </BrowserRouter>
   );
 }
