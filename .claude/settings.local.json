@@ -17,7 +17,9 @@
       "Bash(curl -s http://localhost:5173)",
       "Bash(git push *)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(curl -s http://localhost:3001/health)"
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(ls -la \"C:/Android/cmdline-tools.zip\" 2>/dev/null && echo \"size: $\\(du -m \"C:/Android/cmdline-tools.zip\" | cut -f1\\) MB\")",
+      "Bash(unzip -t \"C:/Android/cmdline-tools.zip\")"
     ]
   }
 }

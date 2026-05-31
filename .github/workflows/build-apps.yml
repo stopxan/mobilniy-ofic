@@ -22,11 +22,13 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
 
-      - name: Install & Build web
+      - name: Install web deps
         working-directory: web
-        run: |
-          npm install
-          npm run build
+        run: npm install
+
+      - name: Build web (vite only, skip tsc)
+        working-directory: web
+        run: node ../node_modules/vite/bin/vite.js build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
@@ -40,7 +42,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload EXE
+      - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pizza-Chain-Windows
@@ -61,28 +63,33 @@ jobs:
         with: { distribution: 'temurin', java-version: '17' }
       - uses: android-actions/setup-android@v3
 
-      - name: Install & Build web
+      - name: Install web deps
         working-directory: web
-        run: |
-          npm install
-          npm run build
+        run: npm install
+
+      - name: Build web (vite only, skip tsc)
+        working-directory: web
+        run: node ../node_modules/vite/bin/vite.js build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-      - name: Setup Capacitor
+      - name: Setup Capacitor Android
         working-directory: web
         run: |
-          npx @capacitor/cli init "Pizza Chain" uz.pizza.chain --web-dir dist 2>/dev/null || true
-          npx @capacitor/cli add android 2>/dev/null || true
-          npx @capacitor/cli sync android
+          node_modules/.bin/cap add android 2>/dev/null || true
+          node_modules/.bin/cap sync android
+
+      - name: Make gradlew executable
+        working-directory: web/android
+        run: chmod +x gradlew
 
       - name: Build Debug APK
         working-directory: web/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pizza-Chain-Android
@@ -90,13 +97,15 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # CREATE RELEASE (tags only)
+  # CREATE GITHUB RELEASE
   # ============================================================
   create-release:
     name: Create Release
     needs: [build-windows, build-android]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -108,39 +117,30 @@ jobs:
         uses: actions/download-artifact@v4
         with: { name: Pizza-Chain-Android, path: release }
 
-      - name: Update version.json
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          cat > web/public/version.json << EOF
-          {
-            "version": "$VERSION",
-            "build": $(date +%s),
-            "date": "$(date +%Y-%m-%d)",
-            "changes": ["Yangi versiya $VERSION"],
-            "download": {
-              "windows": "https://github.com/stopxan/mobilniy-ofic/releases/latest/download/Pizza-Chain-Setup.exe",
-              "android": "https://github.com/stopxan/mobilniy-ofic/releases/latest/download/pizza-chain.apk"
-            }
-          }
-          EOF
+      - name: List release files
+        run: ls -la release/
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release/*.exe
-            release/*.apk
+          files: release/*
           body: |
-            ## Pizza Chain Yangi Versiya
+            ## 🍕 Pizza Chain ${{ github.ref_name }}
 
-            ### Yuklab olish:
-            - **Windows**: `Pizza Chain Setup.exe` ni yuklab o'rnating
-            - **Android**: `pizza-chain.apk` ni telefonga yuklab o'rnating
+            ### ⬇️ Yuklab olish:
 
-            ### O'rnatish:
-            **Android APK:**
-            1. Yuklab oling
-            2. Telefon sozlamalari → Xavfsizlik → Noma'lum manbalar → Ruxsat
-            3. APK ni oching va o'rnating
+            | Platforma | Fayl |
+            |-----------|------|
+            | **Windows** | `Pizza Chain Setup*.exe` |
+            | **Android** | `app-debug.apk` |
+
+            ### 📱 Android APK o'rnatish:
+            1. `app-debug.apk` ni telefoningizga yuklab oling
+            2. Sozlamalar → Xavfsizlik → **Noma'lum manbalar** → Ruxsat
+            3. APK faylni oching → O'rnatish
+
+            ### 🖥️ Windows o'rnatish:
+            1. `Pizza Chain Setup.exe` ni ishga tushiring
+            2. O'rnatish qo'llanmasini bajaring
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
