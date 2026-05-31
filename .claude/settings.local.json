@@ -3,7 +3,18 @@
     "allow": [
       "Bash(dir \"C:\\\\mobilniy ofic\")",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)",
+      "PowerShell(winget --version 2>$null)",
+      "PowerShell($env:PATH = \"$env:PATH;C:\\\\Program Files\\\\GitHub CLI\"; gh --version)",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__list_organizations",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__list_projects",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__get_project_url",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__get_publishable_keys",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__apply_migration",
+      "mcp__f5191144-7053-41a5-b0bb-d6c3c5a13e6d__execute_sql",
+      "Bash(curl -s http://localhost:5173)"
     ]
   }
 }

@@ -51,7 +51,7 @@ router.get('/owner', authenticate, requireRole('owner'), async (req: Request, re
       // Overdue tasks count
       queryOne<any>(`SELECT COUNT(*) as count FROM tasks WHERE status = 'overdue'`),
       // Total shortage
-      queryOne<any>(`SELECT COALESCE(SUM(shortage_amount), 0) as total FROM inventories WHERE DATE(created_at) = $1`, [today]),
+      queryOne<any>(`SELECT COALESCE(SUM(shortage_total), 0) as total FROM inventories WHERE DATE(created_at) = $1`, [today]),
       // Low stock products
       query<any>(`
         SELECT p.name, s.quantity, p.min_stock, b.name as branch_name
