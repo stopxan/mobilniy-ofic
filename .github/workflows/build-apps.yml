@@ -4,51 +4,8 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version (e.g. 1.0.1)'
-        required: true
-        default: '1.0.0'
 
 jobs:
-  # ============================================================
-  # WINDOWS EXE
-  # ============================================================
-  build-windows:
-    name: Windows EXE
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-
-      - name: Install web deps
-        working-directory: web
-        run: npm install
-
-      - name: Build web (vite only, skip tsc)
-        working-directory: web
-        run: node ../node_modules/vite/bin/vite.js build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Install desktop deps
-        working-directory: desktop
-        run: npm install
-
-      - name: Build EXE
-        working-directory: desktop
-        run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload EXE artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Pizza-Chain-Windows
-          path: desktop/dist/*.exe
-          retention-days: 30
-
   # ============================================================
   # ANDROID APK
   # ============================================================
@@ -57,51 +14,96 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
+
       - uses: actions/setup-java@v4
         with: { distribution: 'temurin', java-version: '17' }
+
       - uses: android-actions/setup-android@v3
 
-      - name: Install web deps
-        working-directory: web
-        run: npm install
+      # Install from ROOT (workspaces) so cap CLI is available
+      - name: Install all dependencies (root workspace)
+        run: npm install --workspaces --include-workspace-root
 
-      - name: Build web (vite only, skip tsc)
+      - name: Build web with Vite
         working-directory: web
         run: node ../node_modules/vite/bin/vite.js build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://pizza-chain-app.vercel.app' }}
 
-      - name: Setup Capacitor Android
+      - name: Add Android platform
         working-directory: web
         run: |
-          node_modules/.bin/cap add android 2>/dev/null || true
-          node_modules/.bin/cap sync android
-
-      - name: Make gradlew executable
-        working-directory: web/android
-        run: chmod +x gradlew
+          ../node_modules/.bin/cap add android 2>/dev/null || echo "Android already added"
+          ../node_modules/.bin/cap sync android
 
       - name: Build Debug APK
         working-directory: web/android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -x lint
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Rename APK
+        run: |
+          mkdir -p release
+          cp web/android/app/build/outputs/apk/debug/app-debug.apk release/pizza-chain-v${{ github.ref_name }}.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Pizza-Chain-Android
-          path: web/android/app/build/outputs/apk/debug/*.apk
+          name: Pizza-Chain-Android-APK
+          path: release/*.apk
           retention-days: 30
 
   # ============================================================
-  # CREATE GITHUB RELEASE
+  # WINDOWS EXE
+  # ============================================================
+  build-windows:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Install all dependencies
+        run: npm install
+
+      - name: Build web
+        working-directory: web
+        run: node ../node_modules/vite/bin/vite.js build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://pizza-chain-app.vercel.app' }}
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm install
+
+      - name: Build Windows EXE
+        working-directory: desktop
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pizza-Chain-Windows-EXE
+          path: desktop/dist/*.exe
+          retention-days: 30
+
+  # ============================================================
+  # RELEASE
   # ============================================================
   create-release:
-    name: Create Release
-    needs: [build-windows, build-android]
+    name: GitHub Release
+    needs: [build-android, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -109,38 +111,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download EXE
-        uses: actions/download-artifact@v4
-        with: { name: Pizza-Chain-Windows, path: release }
-
       - name: Download APK
         uses: actions/download-artifact@v4
-        with: { name: Pizza-Chain-Android, path: release }
+        with: { name: Pizza-Chain-Android-APK, path: release }
+
+      - name: Download EXE
+        uses: actions/download-artifact@v4
+        with: { name: Pizza-Chain-Windows-EXE, path: release }
 
       - name: List release files
         run: ls -la release/
 
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: "Pizza Chain ${{ github.ref_name }}"
           files: release/*
           body: |
             ## 🍕 Pizza Chain ${{ github.ref_name }}
 
             ### ⬇️ Yuklab olish:
 
-            | Platforma | Fayl |
-            |-----------|------|
-            | **Windows** | `Pizza Chain Setup*.exe` |
-            | **Android** | `app-debug.apk` |
+            | Platforma | Fayl | Ko'rsatma |
+            |-----------|------|-----------|
+            | **Android APK** | `pizza-chain-*.apk` | Quyidagi ko'rsatmani bajaring |
+            | **Windows** | `Pizza Chain Setup*.exe` | Ishga tushiring va o'rnating |
+
+            ---
 
             ### 📱 Android APK o'rnatish:
-            1. `app-debug.apk` ni telefoningizga yuklab oling
-            2. Sozlamalar → Xavfsizlik → **Noma'lum manbalar** → Ruxsat
-            3. APK faylni oching → O'rnatish
+            1. `pizza-chain-*.apk` faylini telefoningizga yuklab oling
+            2. **Sozlamalar** → **Xavfsizlik** → **Noma'lum manbalar** → ✅ Ruxsat
+            3. Yuklab olingan APK faylni oching
+            4. **O'rnatish** tugmasini bosing
 
-            ### 🖥️ Windows o'rnatish:
-            1. `Pizza Chain Setup.exe` ni ishga tushiring
-            2. O'rnatish qo'llanmasini bajaring
+            ---
+
+            ### Login:
+            - Telefon: `+998901000001`
+            - Parol: `password123`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
