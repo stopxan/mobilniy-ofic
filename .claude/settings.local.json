@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\mobilniy ofic\")",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
