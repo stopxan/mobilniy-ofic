@@ -2,7 +2,13 @@ import axios from 'axios';
 import { useAuthStore } from '../store/auth';
 
 const BASE = import.meta.env.VITE_API_URL || '';
-export const api = axios.create({ baseURL: `${BASE}/api` });
+export const api = axios.create({
+  baseURL: `${BASE}/api`,
+  headers: {
+    // Localtunnel bypass header (no effect on other hosts)
+    'bypass-tunnel-reminder': 'true',
+  },
+});
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;

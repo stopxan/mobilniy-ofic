@@ -1,9 +1,16 @@
-﻿{
-    "appId":  "uz.pizza.chain",
-    "webDir":  "../web/dist",
-    "appName":  "Pizza Chain",
-    "server":  {
-                   "cleartext":  false,
-                   "url":  "https://minus-pieces-homework-luck.trycloudflare.com"
-               }
+{
+  "appId": "uz.pizza.chain",
+  "appName": "Pizza Chain",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#0f172a",
+      "showSpinner": false
+    }
+  }
 }

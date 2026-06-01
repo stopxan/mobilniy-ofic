@@ -19,7 +19,13 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(curl -s http://localhost:3001/health)",
       "Bash(ls -la \"C:/Android/cmdline-tools.zip\" 2>/dev/null && echo \"size: $\\(du -m \"C:/Android/cmdline-tools.zip\" | cut -f1\\) MB\")",
-      "Bash(unzip -t \"C:/Android/cmdline-tools.zip\")"
+      "Bash(unzip -t \"C:/Android/cmdline-tools.zip\")",
+      "Bash(curl -s -I \"http://localhost:3001/download/apk\")",
+      "Bash(curl -s -I \"https://excerpt-favorites-gregory-custom.trycloudflare.com/health\")",
+      "Bash(curl -s http://localhost:20241/metrics)",
+      "Bash(curl -s http://localhost:20242/metrics)",
+      "Bash(curl -s -I \"https://excerpt-favorites-gregory-custom.trycloudflare.com/download/apk\")",
+      "PowerShell(Get-Content \"C:\\\\mobilniy ofic\\\\tunnel_backend.log\" | Where-Object { $_ -match \"http\" } | Select-Object -First 5)"
     ]
   }
 }

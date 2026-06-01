@@ -55,6 +55,21 @@ app.use('/api', rateLimit({ windowMs: 1 * 60 * 1000, max: 200 }));
 // Static files (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+// APK direct download
+app.get('/download/apk', (_req, res) => {
+  const apkPath = path.join(__dirname, '..', 'uploads', 'downloads', 'pizza-chain.apk');
+  res.download(apkPath, 'pizza-chain.apk', (err) => {
+    if (err) res.status(404).json({ error: 'APK topilmadi' });
+  });
+});
+app.get('/download/app', (req, res) => {
+  res.json({
+    apk: `${req.protocol}://${req.get('host')}/download/apk`,
+    version: '1.0.0',
+    size: '6 MB',
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);

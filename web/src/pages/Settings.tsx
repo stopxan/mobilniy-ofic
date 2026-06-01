@@ -174,12 +174,10 @@ export default function SettingsPage() {
             📱 Telefonga o'rnatish
           </button>
           <a
-            href="https://github.com/stopxan/mobilniy-ofic/releases/latest"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`${import.meta.env.VITE_API_URL || ''}/download/apk`}
             className="btn-ghost text-sm text-center"
           >
-            ⬇️ APK / EXE yuklash
+            ⬇️ APK yuklash (6MB)
           </a>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-3 text-xs text-slate-400 space-y-1">
