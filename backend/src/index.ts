@@ -11,7 +11,7 @@ import cron from 'node-cron';
 import { logger } from './config/logger';
 import { connectRedis } from './config/redis';
 import { initTelegramBot, sendDailySummaryToOwners } from './services/telegram';
-import { syncAllBranches } from './services/iiko';
+import { syncAll } from './services/iiko';
 import { generateDailySummary } from './services/ai';
 import { notifyOwners } from './services/notifications';
 
@@ -24,6 +24,7 @@ import usersRoutes from './routes/users';
 import deliveryRoutes from './routes/delivery';
 import remindersRoutes from './routes/reminders';
 import aiRoutes from './routes/ai';
+import iikoRoutes from './routes/iiko';
 
 const app = express();
 const httpServer = createServer(app);
@@ -80,6 +81,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/reminders', remindersRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/iiko', iikoRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -98,7 +100,7 @@ app.use((req, res) => {
 // iiko sinxronizatsiya - har 15 daqiqada
 cron.schedule('*/15 * * * *', async () => {
   logger.info('iiko sync started');
-  await syncAllBranches().catch(err => logger.error('iiko sync failed', { error: err.message }));
+  await syncAll(1).catch(err => logger.error('iiko sync failed', { error: err.message }));
 });
 
 // Muddati o'tgan vazifalarni belgilash - har soatda
